@@ -61,18 +61,28 @@ function createChart(data) {
             }
 
             dataByYear[year].count++;
-            dataByYear[year].hours += parseFloat(row["Workload (h)"]);
+            dataByYear[year].hours += parseFloat(row["Workload (h)"]) || 0;
         }
     }
 
+    // Criar arrays fixas para evitar mismatch de índices
+    var years = Object.keys(dataByYear);
+    var yearDataArray = years.map(function (y) {
+        return dataByYear[y];
+    });
+
     var chartData = {
-        labels: Object.keys(dataByYear),
+        labels: years,
         datasets: [
             {
                 label: "Total de Horas",
-                data: Object.values(dataByYear).map(function (yearData) {
+                data: yearDataArray.map(function (yearData) {
                     return yearData.hours;
                 }),
+                // armazena a contagem diretamente no dataset para uso na tooltip
+                counts: yearDataArray.map(function (yearData) {
+                    return yearData.count;
+                })
             },
         ],
     };
@@ -86,11 +96,13 @@ function createChart(data) {
                 tooltip: {
                     callbacks: {
                         label: function (context) {
-                            var year = Object.keys(dataByYear)[context.dataIndex];
-                            var yearData = dataByYear[year];
+                            var idx = context.dataIndex;
+                            var ds = context.chart.data.datasets[context.datasetIndex];
+                            var hours = ds.data[idx] || 0;
+                            var count = (ds.counts && ds.counts[idx]) ? ds.counts[idx] : 0;
                             return [
-                                "Horas: " + yearData.hours.toFixed(2),
-                                "Certificados: " + yearData.count
+                                "Horas: " + Number(hours).toFixed(2),
+                                "Certificados: " + count
                             ];
                         }
                     }
