@@ -1,15 +1,15 @@
 var urlConfig = "config.js";
 
-$.getScript(urlConfig, function(){
-    $(document).ready(function() {
+$.getScript(urlConfig, function () {
+    $(document).ready(function () {
         $.ajax({
-        // Ler o conteúdo do CSV e iniciar o processamento
+            // Ler o conteúdo do CSV e iniciar o processamento
 
-        url: FULLURL,
-        dataType: 'text',
-        success: function(data) {
-            parseCSV(data);
-        }
+            url: FULLURL,
+            dataType: 'text',
+            success: function (data) {
+                parseCSV(data);
+            }
         });
     });
 });
@@ -49,7 +49,6 @@ function createChart(data) {
     for (var i = 0; i < data.length; i++) {
         var row = data[i];
         var conclusionDate = new Date(row["Conclusion"]);
-        // var year = new Date(row["Conclusion"]).getFullYear();
 
         if (!isNaN(conclusionDate.getTime())) {
             var year = conclusionDate.getFullYear();
@@ -69,12 +68,12 @@ function createChart(data) {
     var chartData = {
         labels: Object.keys(dataByYear),
         datasets: [
-        {
-            label: "Total de Horas",
-            data: Object.values(dataByYear).map(function (yearData) {
-            return yearData.hours;
-            }),
-        },
+            {
+                label: "Total de Horas",
+                data: Object.values(dataByYear).map(function (yearData) {
+                    return yearData.hours;
+                }),
+            },
         ],
     };
 
@@ -83,8 +82,20 @@ function createChart(data) {
         type: "bar",
         data: chartData,
         options: {
-            // responsive: true,
-            // height: "300px"
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            var year = Object.keys(dataByYear)[context.dataIndex];
+                            var yearData = dataByYear[year];
+                            return [
+                                "Horas: " + yearData.hours.toFixed(2),
+                                "Certificados: " + yearData.count
+                            ];
+                        }
+                    }
+                }
+            }
         },
     });
 }
